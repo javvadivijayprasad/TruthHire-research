@@ -1,0 +1,6 @@
+{
+  "generator": "experiments/generate_dataset.py",
+  "master_seed": 20260612,
+  "record_count": 3000,
+  "content_sha256": "ac8a3db337183a7415c170c9a7c0ff5094b76d20afa9add2a82bc58769f4594f"
+}

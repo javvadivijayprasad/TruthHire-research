@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software or the accompanying paper, please cite it as below."
+title: "TruthHire: A Shared Intelligence Network for Employment-Experience Fraud"
+version: 1.0.0
+date-released: 2026-06-13
+license: MIT
+type: software
+authors:
+  - family-names: Javvadi
+    given-names: Vijay
+    affiliation: "Independent Researcher"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+keywords:
+  - employment fraud
+  - privacy-preserving data sharing
+  - private set intersection
+  - incentive mechanisms
+  - hiring
+  - FCRA
+  - GDPR
+preferred-citation:
+  type: article
+  title: "A Shared Intelligence Network for Employment-Experience Fraud: Privacy-Preserving Signal Sharing and Incentive Design"
+  year: 2026
+  authors:
+    - family-names: Javvadi
+      given-names: Vijay

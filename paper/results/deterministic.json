@@ -1,0 +1,20 @@
+{
+  "experiment": "deterministic_layer",
+  "metrics": {
+    "n": 3000,
+    "tp": 1510,
+    "fp": 0,
+    "tn": 1490,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "false_positive_rate": 0.0,
+    "recall_by_fraud_type": {
+      "job_before_graduation": 1.0,
+      "experience_inflation": 1.0,
+      "impossible_experience": 1.0,
+      "employment_overlap": 1.0
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "experiment": "incentive_adverse_selection",
+  "grid": [
+    {
+      "strategic_frac": 0.0,
+      "regime": "naive",
+      "network_fp_rate": 0.0,
+      "network_precision": 1.0,
+      "network_recall": 1.0
+    },
+    {
+      "strategic_frac": 0.0,
+      "regime": "proposed",
+      "network_fp_rate": 0.0,
+      "network_precision": 1.0,
+      "network_recall": 0.6459
+    },
+    {
+      "strategic_frac": 0.25,
+      "regime": "naive",
+      "network_fp_rate": 0.0976,
+      "network_precision": 0.7199,
+      "network_recall": 1.0
+    },
+    {
+      "strategic_frac": 0.25,
+      "regime": "proposed",
+      "network_fp_rate": 0.0,
+      "network_precision": 1.0,
+      "network_recall": 0.4975
+    },
+    {
+      "strategic_frac": 0.5,
+      "regime": "naive",
+      "network_fp_rate": 0.1704,
+      "network_precision": 0.5954,
+      "network_recall": 1.0
+    },
+    {
+      "strategic_frac": 0.5,
+      "regime": "proposed",
+      "network_fp_rate": 0.0,
+      "network_precision": 1.0,
+      "network_recall": 0.3965
+    }
+  ]
+}

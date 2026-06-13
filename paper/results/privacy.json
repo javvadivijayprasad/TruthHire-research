@@ -1,0 +1,23 @@
+{
+  "experiment": "reidentification",
+  "rows": [
+    {
+      "coverage": 0.25,
+      "reid_naive": 1.0,
+      "reid_keyed_outsider": 0.0,
+      "reid_keyed_insider": 1.0
+    },
+    {
+      "coverage": 0.5,
+      "reid_naive": 1.0,
+      "reid_keyed_outsider": 0.0,
+      "reid_keyed_insider": 1.0
+    },
+    {
+      "coverage": 1.0,
+      "reid_naive": 1.0,
+      "reid_keyed_outsider": 0.0,
+      "reid_keyed_insider": 1.0
+    }
+  ]
+}

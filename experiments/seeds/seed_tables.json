@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "purpose": "Deterministic seed tables for generating a genuine (non-fraudulent) employment-trajectory population. Re-running the generator with the same master seed reproduces the dataset byte-for-byte.",
+    "style": "Mirrors the reproducible seed-table methodology used in the TestCaseGen and Defect-Analysis studies."
+  },
+  "titles": ["Analyst", "Engineer", "Senior Engineer", "Staff Engineer", "Manager",
+             "Consultant", "Designer", "Data Scientist", "Lead", "Associate",
+             "Director", "Specialist", "Coordinator", "Architect"],
+  "employers": ["Northwind", "Globex", "Initech", "Umbrella", "Soylent", "Hooli",
+                "Acme", "Vandelay", "Stark", "Wayne", "Wonka", "Cyberdyne",
+                "Tyrell", "Massive Dynamic", "Gekko Capital", "Pied Piper"],
+  "grad_age_distribution": [21, 22, 22, 22, 23, 24],
+  "birth_year_range": [1968, 2000],
+  "jobs_per_career_distribution": [1, 2, 2, 3, 3, 4, 5],
+  "job_duration_years_distribution": [1, 2, 2, 3, 3, 4, 5],
+  "gap_years_distribution": [0, 0, 0, 1]
+}

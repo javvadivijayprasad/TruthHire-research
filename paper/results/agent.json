@@ -1,0 +1,12 @@
+{
+  "experiment": "agent_fabrication",
+  "metrics": {
+    "deterministic_recall_on_fabricated": 0.0,
+    "deterministic_fp_on_genuine": 0.0,
+    "regularity_auc": 0.8941,
+    "mean_regularity_genuine": 0.601,
+    "mean_regularity_fabricated": 0.931,
+    "n_genuine": 1500,
+    "n_fabricated": 1500
+  }
+}

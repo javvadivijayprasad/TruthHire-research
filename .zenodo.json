@@ -1,0 +1,29 @@
+{
+  "title": "TruthHire: A Shared Intelligence Network for Employment-Experience Fraud — Reference Implementation and Evaluation Harness",
+  "upload_type": "software",
+  "description": "Open-source reference implementation and reproducible evaluation harness for the framework paper 'A Shared Intelligence Network for Employment-Experience Fraud: Privacy-Preserving Signal Sharing and Incentive Design.' Includes a deterministic timeline-impossibility detection engine with tests; seeded, reproducible dataset generation with provenance hashing; fraud-injection, evaluation, incentive-mechanism, re-identification, AI-fabrication, network-flywheel, and fraud-ring experiments with parameter sweeps; figure-generation scripts; and a download script for external public corpora (KARRIEREWEGE, ResumeAtlas, Kaggle). All randomized results use a fixed master seed and report 95% confidence intervals.",
+  "creators": [
+    {
+      "name": "Javvadi, Vijay",
+      "affiliation": "Independent Researcher",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "keywords": [
+    "employment fraud",
+    "resume fraud",
+    "privacy-preserving data sharing",
+    "private set intersection",
+    "fraud consortia",
+    "incentive mechanisms",
+    "mechanism design",
+    "hiring",
+    "FCRA",
+    "GDPR",
+    "responsible AI"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "version": "1.0.0",
+  "language": "eng"
+}
