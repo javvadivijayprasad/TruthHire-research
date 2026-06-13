@@ -1,5 +1,7 @@
 # TruthHire (research)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20681819.svg)](https://doi.org/10.5281/zenodo.20681819)
+
 Paper, experiments, and reproducible evaluation harness for
 **"A Shared Intelligence Network for Employment-Experience Fraud:
 Privacy-Preserving Signal Sharing and Incentive Design."**
