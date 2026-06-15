@@ -10,7 +10,7 @@ import json
 import os
 
 from experiments.generate_dataset import generate, write_dataset, content_hash
-from experiments.loaders import load_karrierewege
+from experiments.loaders import load_karrierewege, load_resume_corpus
 from experiments.fraud_injection import build_benchmark
 from experiments.evaluate import evaluate
 
@@ -28,9 +28,42 @@ def main():
                     help="Path to a local KARRIEREWEGE export; if set, real "
                          "genuine records are used and left unperturbed for the "
                          "false-positive measurement (no fraud injected).")
+    ap.add_argument("--resume-corpus", type=str, default=None,
+                    help="Path to a local dated resume corpus (JSON/JSONL with "
+                         "per-job start/end dates, e.g. HF datasetmaster/resumes). "
+                         "Records are left unperturbed for false-positive measurement.")
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
     os.makedirs(RESULTS, exist_ok=True)
+
+    if args.resume_corpus:
+        from app.timeline import timeline_score
+        loaded = load_resume_corpus(args.resume_corpus, limit=args.limit)
+        genuine = loaded["records"]
+        flagged = 0
+        by_flag = {}
+        for r in genuine:
+            _, flags, _ = timeline_score(r)
+            if flags:
+                flagged += 1
+            for f in flags:
+                by_flag[f.code] = by_flag.get(f.code, 0) + 1
+        n = len(genuine)
+        report = {
+            "experiment": "truthhire_timeline_layer_realdata_fp",
+            "source": {"source": "resume_corpus", "path": args.resume_corpus,
+                       "content_sha256": content_hash(genuine), **loaded["report"]},
+            "false_positive_rate": round(flagged / n, 4) if n else None,
+            "false_positives": flagged,
+            "records_scored": n,
+            "fp_by_flag": {k: round(v / n, 4) for k, v in by_flag.items()} if n else {},
+        }
+        out_path = os.path.join(RESULTS, "truthhire_realdata_fp_results.json")
+        with open(out_path, "w", encoding="utf-8") as fh:
+            json.dump(report, fh, indent=2)
+        print(json.dumps(report, indent=2))
+        print(f"\nwrote {os.path.relpath(out_path)}")
+        return
 
     if args.karrierewege:
         genuine = load_karrierewege(args.karrierewege, limit=args.limit)

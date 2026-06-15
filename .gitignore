@@ -11,8 +11,10 @@ venv/
 *.blg
 *.toc
 *.synctex.gz
-# regenerable external corpora
+# regenerable external corpora + local run outputs
+datasets/external/
 paper/datasets/external/
+results/
 .DS_Store
 .idea/
 .vscode/

@@ -63,8 +63,10 @@ reputation-weighted correction that holds precision at 1.00. We treat regulatory
 compatibility (FCRA, GDPR) as a first-class design constraint, quantify the
 contributory-network flywheel and fraud-ring detection, and release a seeded,
 reproducible implementation and evaluation harness as open source. All claims are
-demonstrated on reproducible simulations and a public career-trajectory corpus;
-commercial operation, which triggers the heaviest regulatory duties, is
+demonstrated on reproducible simulations, including a measurement of the
+deterministic layer's false-positive rate on a realistic ``messy-but-honest''
+genuine population (5.5\% after a granularity-aware fix, with fraud recall held at
+1.00); commercial operation, which triggers the heaviest regulatory duties, is
 deliberately deferred.
 \end{abstract}
 
@@ -135,9 +137,12 @@ reproducible experiments (Section~\ref{sec:results}):
   privacy-preserving sharing, and incentive-aligned contribution under explicit
   regulatory constraints.
   \item \textbf{A deterministic timeline engine} (Section~\ref{sec:detect}) that
-  catches internally inconsistent claims with an explainable, near-zero
-  false-positive rule set, and an empirical demonstration that it---alone---cannot
-  catch internally consistent AI fabrications, motivating the other layers.
+  catches internally inconsistent claims with an explainable, low-false-positive
+  rule set---whose false-positive rate we measure on a realistic ``messy-but-honest''
+  genuine population and reduce from 24.1\% to 5.5\% with a granularity-aware date
+  rule (Section~\ref{sec:res:realistic})---together with an empirical demonstration
+  that it---alone---cannot catch internally consistent AI fabrications, motivating
+  the other layers.
   \item \textbf{A privacy threat model and demonstration}
   (Sections~\ref{sec:privacy},~\ref{sec:reid}) proving that the industry-default
   hash construction recovers 100\% of enumerable candidates, with a re-id curve
@@ -158,13 +163,17 @@ reproducible experiments (Section~\ref{sec:results}):
 
 \paragraph{Scope and honesty.} This is a framework paper. We formalize the
 problem, analyze the design space, and demonstrate the detection, privacy,
-incentive, and network properties on seeded simulations and a public
-career-trajectory corpus. We do \emph{not} claim a deployed multi-organization
-study; that, and the measurement of false-positive rates on real, atypical
-candidates at population scale, is the central item of future work
-(Section~\ref{sec:agenda}). We are explicit throughout about which results are
-analytic, which are simulated, and which depend on data we generate versus data
-we obtain.
+incentive, and network properties on seeded simulations and a realistic
+genuine-population false-positive measurement. We do \emph{not} claim a deployed
+multi-organization study; that remains the central item of future work
+(Section~\ref{sec:agenda}). We are also candid about a data-availability finding:
+we attempted the false-positive measurement on two leading public corpora and
+report why neither suffices---one lacks employment dates entirely, the other is
+dominated by synthetic records with incoherent timelines
+(Section~\ref{sec:res:realistic})---which is precisely why our headline
+false-positive figure comes from a controlled, realistic generated population. We
+are explicit throughout about which results are analytic, which are simulated, and
+which depend on data we generate versus data we obtain.
 
 \section{Background and Related Work}\label{sec:related}
 
@@ -314,8 +323,9 @@ through~\ref{sec:incentive} describe the layers that carry novel content.
 \subsection{The deterministic timeline engine}\label{sec:det}
 The first layer is deliberately not machine learning. It applies a small set of
 logical-consistency rules to the candidate's \emph{own} claims, so it is
-explainable, parameter-light, and has a near-zero false-positive rate: it fires
-only on self-contradiction, independent of lifestyle, geography, or digital
+explainable, parameter-light, and has a low false-positive rate---which we
+quantify on a realistic genuine population in Section~\ref{sec:res:realistic}: it
+fires only on self-contradiction, independent of lifestyle, geography, or digital
 footprint. Algorithm~1 states the core.
 
 \begin{algbox}{Algorithm 1: \textsc{TimelineScore}$(r)$}
@@ -331,7 +341,13 @@ $O \leftarrow$ \#\,pairs of full-time intervals overlapping $> \theta_o$ months\
 \end{algbox}
 
 Here $\theta_o$ (overlap tolerance, months) and $\theta_y$ (inflation tolerance,
-years) absorb benign transitions and rounding. Missing fields cause the
+years) absorb benign transitions and rounding. A third tolerance is
+granularity-aware: when a contested date boundary is given only at year
+granularity (``2019'' with no month), sub-year ordering is unknowable, so the
+overlap tolerance for that pair is widened by $\theta_g$ months (we use
+$\theta_g=12$). As Section~\ref{sec:res:realistic} shows, this single rule is
+responsible for most of the achievable false-positive reduction on real-world
+r\'esum\'es, where year-only dates are common. Missing fields cause the
 corresponding rule to abstain rather than fire, so the engine degrades gracefully
 on partial r\'esum\'es. The weights derive from severity, not from training, and
 the final score is capped at 100.
@@ -473,27 +489,41 @@ Designing for compliance and designing for accuracy turn out to be the same task
 
 \subsection{Datasets}\label{sec:datasets}
 No public corpus carries ground-truth experience-fraud labels, so we follow the
-standard practice in fraud research without labels: draw a genuine population from
-real career data and \emph{inject} controlled, labeled fraud. The genuine
-population is drawn from public career-trajectory corpora normalized to dated job
-spans (Table~\ref{tab:datasets}); the primary source is
-KARRIEREWEGE~\cite{karrierewege2025}, 500k+ real ESCO-linked trajectories,
-supplemented by structured-r\'esum\'e corpora~\cite{resumeatlas2024,kaggleresumes}.
-For controlled, reproducible experiments we additionally generate a genuine
-population deterministically from seed tables, and an AI-fabricated positive class
-in the style of agent-based generators~\cite{agentgen2025}.
+standard practice in fraud research without labels: draw a genuine population and
+\emph{inject} controlled, labeled fraud. For the genuine population we use two
+generated sources: a deterministically seeded, internally consistent population
+(a correctness benchmark), and a \emph{realistic} ``messy-but-honest'' population
+that injects the kinds of irregularity real r\'esum\'es exhibit---career gaps,
+month- and year-granularity dates, short transition overlaps, claimed-year
+rounding, and a documented minority with legitimately concurrent roles---which is
+the instrument for our headline false-positive measurement. The AI-fabricated
+positive class follows agent-based generators~\cite{agentgen2025}.
+
+We also attempted the false-positive measurement on real public corpora and
+report a data-availability finding (Table~\ref{tab:datasets}). The deterministic
+checks reason over employment \emph{dates}, but
+KARRIEREWEGE~\cite{karrierewege2025}, despite its scale (500k+ ESCO-linked
+trajectories), stores only \emph{ordered occupation sequences} with no start/end
+dates, age, or claimed-years, so none of the date-based checks can fire on it. A
+dated technical-r\'esum\'e corpus that does carry employment dates yields an
+implausible 65.9\% overlap false-positive rate, which diagnosis attributes to data
+quality---byte-identical duplicate records, the same job title repeated with
+independently-random overlapping date ranges, and an implausibly uniform
+jobs-per-person distribution---rather than to engine behavior. Clean public
+r\'esum\'e corpora with genuine, coherent employment dates are scarce (a privacy
+reality); our released harness ingests one unchanged should it become available.
 
 \begin{table}[t]\centering\small
 \caption{Datasets used for evaluation.}\label{tab:datasets}
 \begin{tabular}{lll}
 \toprule
-Dataset & Role & Source \\
+Dataset & Role & Source / outcome \\
 \midrule
-KARRIEREWEGE~\cite{karrierewege2025} & real genuine pop.\ (FP test) & arXiv:2412.14612 \\
-ResumeAtlas~\cite{resumeatlas2024} & supplementary r\'esum\'es & arXiv:2406.18125 \\
-Kaggle 54k structured~\cite{kaggleresumes} & supplementary & Kaggle \\
-Seeded synthetic (this work) & reproducible benchmark & seed tables + injection \\
+Seeded synthetic (this work) & correctness benchmark & seed tables + injection \\
+Realistic population (this work) & \textbf{headline FP test} & messy-but-honest generator \\
 Agent-fabricated (this work) & AI-fake positive class & \cite{agentgen2025}-style generator \\
+KARRIEREWEGE~\cite{karrierewege2025} & attempted real FP & \emph{unusable: no dates} \\
+Dated r\'esum\'e corpus & attempted real FP & \emph{unusable: synthetic/incoherent} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -549,10 +579,9 @@ fraud injection, the deterministic engine attains the values in
 Table~\ref{tab:det}: perfect separation. This is expected \emph{by construction}:
 the layer fires only on self-contradiction, so it cannot misflag a record that
 contains none. The result is therefore a correctness check, not evidence of
-difficulty; the decisive measurement is the false-positive rate on real,
-\emph{atypical} KARRIEREWEGE trajectories, which our released harness runs
-directly and which we identify as the headline external experiment
-(Section~\ref{sec:agenda}).
+difficulty; the decisive measurement is the false-positive rate on
+\emph{atypical-but-genuine} r\'esum\'es, which we report in
+Section~\ref{sec:res:realistic}.
 
 \begin{table}[t]\centering\small
 \caption{Deterministic-layer result (seeded synthetic, $n=3000$, 50\% fraud).}\label{tab:det}
@@ -597,6 +626,60 @@ Recall on overlap fraud & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\subsection{Realistic false positives}\label{sec:res:realistic}
+The clean benchmark above understates difficulty by construction. We therefore
+measure the deterministic layer on a \emph{realistic} genuine population
+($n=3{,}000$ per seed, 20 seeds): non-fraudulent records that nonetheless carry
+the irregularities of real r\'esum\'es---career gaps and sabbaticals, month- and
+year-granularity dates, short legitimate transition overlaps, claimed-year
+rounding, and a documented minority ($7\%$) with legitimately concurrent
+full-time-coded roles (portfolio careers).
+
+Under naive date parsing the false-positive rate is $24.1\%$ (95\% CI
+$[23.7,24.4]$), almost entirely \code{EMPLOYMENT\_OVERLAP}. Diagnosis shows the
+cause is \emph{phantom} overlaps: a job written as ``2019'' is read as January
+2019, manufacturing an overlap with the prior job that did not exist. The
+granularity-aware tolerance $\theta_g$ (Section~\ref{sec:det}) removes these,
+cutting the false-positive rate to $5.5\%$ (95\% CI $[5.3,5.8]$) with
+\emph{overlap-fraud recall held at $1.00$} under both settings
+(Table~\ref{tab:realistic}, Figure~\ref{fig:realistic}). The residual $5.5\%$ is
+attributable to genuinely concurrent employment: a sweep over its prevalence drives
+the false-positive rate to $\approx 0$ when no concurrent roles are present and
+upward monotonically as they become more common. This is the empirical basis for
+treating the deterministic output as \emph{advisory and disputable}: its residual
+false positives are exactly the cases (legitimate portfolio careers) that a
+human---or a corroborating signal---should adjudicate, not the system alone.
+
+\begin{table}[t]\centering\small
+\caption{Deterministic false-positive rate on the realistic genuine population
+(20 seeds, 95\% CI). The granularity-aware rule removes phantom overlaps from
+year-only dates without any loss of fraud recall.}\label{tab:realistic}
+\begin{tabular}{lcc}
+\toprule
+Setting & FP rate & Overlap-fraud recall \\
+\midrule
+Naive date parsing & 0.241 \,[0.237, 0.244] & 1.00 \\
+Granularity-aware ($\theta_g{=}12$) & \textbf{0.055} \,[0.053, 0.058] & 1.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.9\linewidth]{figures/realistic_fp.png}
+\caption{Left: deterministic false-positive rate on realistic genuine r\'esum\'es,
+naive vs.\ granularity-aware (fraud recall $=1.00$ in both). Right: the residual
+false-positive rate is driven by the prevalence of legitimately concurrent
+full-time roles, reaching $\approx 0$ when none are present.}\label{fig:realistic}
+\end{figure}
+
+We additionally ran the released harness on real public corpora and report a
+data-availability finding (Section~\ref{sec:datasets}): KARRIEREWEGE has no
+employment dates, so the date-based checks cannot fire; and a dated
+technical-r\'esum\'e corpus is dominated by synthetic records whose incoherent
+overlapping dates yield a $65.9\%$ rate that reflects data quality, not engine
+behavior. A trustworthy real-data measurement awaits a public corpus with genuine,
+coherent dates---or a consented deployment.
 
 \subsection{Incentive adverse selection}\label{sec:res:incentive}
 We simulate a consortium of 12 participants screening 4{,}000 candidates (20\%
@@ -1079,11 +1162,15 @@ accusation, not merely append a correction the next employer may never read.
 
 \section{Sensitivity Analysis and Threats to Validity}\label{sec:validity}
 
-\paragraph{Construct validity.} Our genuine population is, in the controlled
-experiments, synthetic and deliberately clean; it therefore \emph{understates} the
-deterministic layer's false-positive rate, which on real atypical careers will be
-positive. We are explicit that the headline external measurement---FP on
-KARRIEREWEGE---is future work, and our harness is built to run it unchanged.
+\paragraph{Construct validity.} Our genuine population is generated, not sampled
+from deployment. The clean benchmark is deliberately consistent and therefore
+\emph{understates} false positives; we address this with the realistic
+``messy-but-honest'' population (Section~\ref{sec:res:realistic}), whose $5.5\%$
+false-positive rate is our headline detection-cost figure. That figure is still a
+generated estimate: lacking a public r\'esum\'e corpus with genuine, coherent
+employment dates (Section~\ref{sec:datasets}), a deployment-grade measurement
+across demographic and cultural cohorts remains future work, and our harness is
+built to run it unchanged on any suitable corpus.
 
 \paragraph{Internal validity.} The incentive and flywheel results are simulations
 with stated generative assumptions (consortium size, fraud prior, co-observation).
@@ -1135,8 +1222,13 @@ explainable backbone of an integrated, shared, regulation-aware system.
 \section{Limitations and Research Agenda}\label{sec:agenda}
 The central open item is empirical and external: a multi-organization study with
 consenting partners to validate the flywheel at scale, and a measurement of the
-deterministic and inferential false-positive rates on real, atypical KARRIEREWEGE
-trajectories and across demographic and cultural cohorts (a fairness audit). On
+deterministic and inferential false-positive rates on a real r\'esum\'e corpus
+with genuine, coherent employment dates and across demographic and cultural
+cohorts (a fairness audit). As Section~\ref{sec:datasets} documents, such a corpus
+is not currently available publicly---the leading candidates either lack dates or
+are synthetically contaminated---so this measurement awaits either a suitable
+public release or a consented deployment; our realistic generated population
+(Section~\ref{sec:res:realistic}) is the present-day stand-in. On
 the cryptographic side, a formal security proof and a performance evaluation of
 the chosen threshold-PSI protocol are needed. On the detection side, richer
 inferential features and their adaptive-adversary robustness deserve study, as

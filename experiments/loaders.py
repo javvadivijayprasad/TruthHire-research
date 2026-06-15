@@ -137,3 +137,139 @@ def load_karrierewege(path: str, limit: Optional[int] = None) -> List[Dict]:
 def load_kaggle_structured(path: str) -> List[Dict]:
     """Map Kaggle '54k structured resume' fields to schema (adjust to columns)."""
     raise NotImplementedError("Map Kaggle structured resume fields here.")
+
+
+# ----------------------------------------------------- dated resume corpora
+# Generic loader for nested-JSON resume corpora that DO carry employment dates
+# (e.g. HF `datasetmaster/resumes`, MIT-licensed). Field spellings vary across
+# corpora, so every key is matched first-wins and we also parse a single
+# combined "start - end" range field. Records with no dated experience are
+# reported (not silently dropped) so a zero result is never mistaken for "0% FP".
+import re as _re
+
+RC_CONFIG = {
+    "experiences_field": [
+        "experience", "experiences", "work_experience", "workExperience",
+        "employment", "work_history", "professional_experience", "jobs",
+        "positions", "career",
+    ],
+    "title_keys": ["job_title", "jobTitle", "title", "position", "role", "designation"],
+    "company_keys": ["company", "company_name", "companyName", "employer",
+                     "organization", "organisation"],
+    "start_keys": ["start_date", "startDate", "start", "from", "begin",
+                   "date_from", "dateFrom", "start_year", "startYear"],
+    "end_keys": ["end_date", "endDate", "end", "to", "until", "date_to",
+                 "dateTo", "end_year", "endYear"],
+    # single field holding a combined range, e.g. "Jan 2019 - Present"
+    "range_keys": ["dates", "employment_dates", "duration", "period",
+                   "date_range", "dateRange", "employment_period", "tenure",
+                   "years"],
+    # sub-objects that may themselves hold start/end (one level of nesting)
+    "nested_date_objs": ["dates", "duration", "period", "date_range", "dateRange"],
+}
+
+_RANGE_SEP = _re.compile(r"\s*[–—]\s*|\s+to\s+|\s+-\s+|\s+until\s+", _re.I)
+
+
+def _split_range(val):
+    """Split a combined range string into (start, end); None if not splittable."""
+    if val is None:
+        return None, None
+    s = str(val).strip()
+    parts = _RANGE_SEP.split(s, maxsplit=1)
+    if len(parts) == 2:
+        return parts[0].strip(), parts[1].strip()
+    return None, None
+
+
+def _exp_dates(e: dict):
+    """Best-effort (start, end) extraction from one experience dict."""
+    start = _norm_year_month(_first(e, RC_CONFIG["start_keys"]))
+    end = _norm_year_month(_first(e, RC_CONFIG["end_keys"]))
+    if start and end:
+        return start, end
+    # combined range field
+    for k in RC_CONFIG["range_keys"]:
+        if k in e and e[k]:
+            a, b = _split_range(e[k])
+            if a and b:
+                return _norm_year_month(a), _norm_year_month(b)
+    # nested date object
+    for k in RC_CONFIG["nested_date_objs"]:
+        sub = e.get(k)
+        if isinstance(sub, dict):
+            s2 = _norm_year_month(_first(sub, RC_CONFIG["start_keys"]))
+            e2 = _norm_year_month(_first(sub, RC_CONFIG["end_keys"]))
+            if s2 and e2:
+                return s2, e2
+    return start, end  # may be partial/None
+
+
+def _company_of(e: dict):
+    c = _first(e, RC_CONFIG["company_keys"])
+    if isinstance(c, dict):
+        c = _first(c, ["name", "company_name", "companyName"]) or None
+    return c
+
+
+def load_resume_corpus(path: str, limit: Optional[int] = None) -> Dict:
+    """Load a dated resume corpus -> canonical records + a coverage report.
+
+    Returns {"records": [...], "report": {...}}. Only experiences with BOTH a
+    start and end date contribute to the timeline checks; the report says how
+    many resumes and jobs carried usable dates so a low FP is never confused
+    with low date coverage.
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"{path} not found. Download the corpus first (see README).")
+    ext = os.path.splitext(path)[1].lower()
+    if ext in (".jsonl", ".ndjson"):
+        rows = []
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    rows.append(json.loads(line))
+    elif ext == ".json":
+        with open(path, encoding="utf-8") as fh:
+            rows = json.load(fh)
+        if isinstance(rows, dict):
+            rows = rows.get("data") or rows.get("resumes") or list(rows.values())
+    else:
+        raise ValueError(f"Unsupported extension {ext}; use .jsonl/.json")
+
+    out: List[Dict] = []
+    n_people = n_with_dates = n_jobs = n_dated_jobs = 0
+    for i, obj in enumerate(rows):
+        if not isinstance(obj, dict):
+            continue
+        n_people += 1
+        exps = _first(obj, RC_CONFIG["experiences_field"]) or []
+        if isinstance(exps, dict):
+            exps = list(exps.values())
+        jobs = []
+        for e in exps:
+            if not isinstance(e, dict):
+                continue
+            n_jobs += 1
+            start, end = _exp_dates(e)
+            if not (start and end):
+                continue
+            n_dated_jobs += 1
+            jobs.append({"title": _first(e, RC_CONFIG["title_keys"]),
+                         "company": _company_of(e), "start": start, "end": end,
+                         "employment_type": "full_time"})
+        if not jobs:
+            continue
+        n_with_dates += 1
+        rec = {"candidate_id": str(obj.get("id", obj.get("_id", i))),
+               "age": None, "graduation_year": None, "jobs": jobs}
+        rec["total_claimed_years"] = summed_years(rec)
+        out.append(rec)
+        if limit and len(out) >= limit:
+            break
+
+    report = {"people_seen": n_people, "people_with_dated_jobs": n_with_dates,
+              "jobs_seen": n_jobs, "jobs_with_dates": n_dated_jobs,
+              "usable_records": len(out)}
+    return {"records": out, "report": report}

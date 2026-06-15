@@ -1,6 +1,7 @@
 """Run the full expanded study and dump machine-readable results."""
 import json, os
 from experiments import sweeps as S
+from experiments import realistic as R
 
 PAPER = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "paper"))
 
@@ -18,6 +19,8 @@ def run():
         "network_flywheel": S.network_flywheel(),
         "fraud_ring": S.fraud_ring_sweep(),
         "economics": S.economics(),
+        "realistic_fp": R.realistic_fp(),
+        "realistic_fp_concurrent_sweep": R.realistic_fp_sweep(),
     }
     json.dump(study, open(f"{PAPER}/results/study.json", "w"), indent=2)
     print(f"wrote {PAPER}/results/study.json")
