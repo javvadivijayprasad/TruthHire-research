@@ -1,26 +1,62 @@
+# YAML 1.2
 cff-version: 1.2.0
-message: "If you use this software or the accompanying paper, please cite it as below."
-title: "TruthHire: A Shared Intelligence Network for Employment-Experience Fraud"
-version: 1.1.0
-date-released: 2026-06-14
-license: MIT
+message: "If you use this software or reproduce these results, please cite using these metadata."
+title: "TruthHire: A Shared Intelligence Network for Employment-Experience Fraud — Reference Implementation and Evaluation Harness"
+abstract: >
+  Open-source reference implementation and reproducible evaluation
+  harness for employment-experience fraud detection. Includes a
+  deterministic timeline-impossibility detection engine with tests;
+  seeded, reproducible dataset generation with provenance hashing;
+  fraud-injection, evaluation, incentive-mechanism, re-identification,
+  AI-fabrication, network-flywheel, and fraud-ring experiments with
+  parameter sweeps; figure-generation scripts; and a download script
+  for external public corpora (KARRIEREWEGE, ResumeAtlas, Kaggle).
+  All randomized results use a fixed master seed (20260612) and
+  report 95% confidence intervals.
 type: software
+license: MIT
+version: 1.0.3
+date-released: 2026-06-13
 authors:
-  - family-names: Javvadi
-    given-names: Vijay
-    affiliation: "Independent Researcher"
+  - family-names: "Javvadi"
+    given-names: "Vijay Prasad"
+    orcid: "https://orcid.org/0009-0004-1192-6906"
+    affiliation: "Independent Researcher, Plainsboro, NJ, USA"
+    email: "vijay@vijayjavvadiresearch.ai"
+identifiers:
+  - description: "Archived release on Zenodo"
+    type: doi
+    value: "10.5281/zenodo.20681820"
+repository-code: "https://github.com/javvadivijayprasad/TruthHire-research"
+url: "https://doi.org/10.5281/zenodo.20681820"
 keywords:
   - employment fraud
+  - resume fraud
   - privacy-preserving data sharing
   - private set intersection
+  - fraud consortia
   - incentive mechanisms
+  - mechanism design
   - hiring
   - FCRA
   - GDPR
+  - responsible AI
 preferred-citation:
-  type: article
-  title: "A Shared Intelligence Network for Employment-Experience Fraud: Privacy-Preserving Signal Sharing and Incentive Design"
-  year: 2026
+  type: software
+  title: "TruthHire: A Shared Intelligence Network for Employment-Experience Fraud — Reference Implementation and Evaluation Harness"
   authors:
-    - family-names: Javvadi
-      given-names: Vijay
+    - family-names: "Javvadi"
+      given-names: "Vijay Prasad"
+      orcid: "https://orcid.org/0009-0004-1192-6906"
+      affiliation: "Independent Researcher, Plainsboro, NJ, USA"
+  year: 2026
+  version: "1.0.3"
+  doi: "10.5281/zenodo.20681820"
+  url: "https://doi.org/10.5281/zenodo.20681820"
+  notes: >
+    Companion peer-reviewed manuscript "Detecting Employment-Experience
+    Fraud at Scale: A Deterministic Timeline Engine and Adversarial
+    AI-Fake Robustness Study" is being prepared for submission to
+    Taylor and Francis Information Security Journal: A Global Perspective
+    (UISS20). Until acceptance, please cite this software DOI rather than
+    the manuscript.
